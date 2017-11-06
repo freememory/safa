@@ -1,5 +1,7 @@
 package io.baschel.thlang;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,6 +98,8 @@ public class Lexer
             case '.':
                 if(match(".."))
                     addToken(DOTDOTDOT);
+                else if(isDigit(peek()))
+                    number();
                 else
                     addToken(DOT);
                 break;
@@ -105,11 +109,86 @@ public class Lexer
                     consumeMultilineString();
                     break;
                 }
+            case '"':
+                string();
+                break;
+            case ' ':
+            case '\r':
+            case '\t':
+                // Ignore whitespace.
+                break;
+
+            case '\n':
+                line++;
+                break;
+
 
             default:
                 Thlang.error(line, "Unexpected character.");
                 break;
         }
+    }
+
+    private boolean isDigit(char c)
+    {
+        return c >= '0' && c <= '9';
+    }
+
+    private void number()
+    {
+        if('0' == peek())
+        {
+            if('x' == peekNext())
+            {
+                while (isDigit(peek()) || "ABCDEF".indexOf(peek()) != -1)
+                    advance();
+
+                addToken(NUMBER, new BigDecimal(new BigInteger(source.substring(start + 2, current), 16)));
+                return;
+            }
+            else if('b' == peekNext())
+            {
+                while (isDigit(peek()))
+                    addToken(NUMBER, new BigDecimal(new BigInteger(source.substring(start + 2, current), 2)));
+                return;
+            }
+            else if(isDigit(peekNext()))
+            {
+                while (isDigit(peek()))
+                    addToken(NUMBER, new BigDecimal(new BigInteger(source.substring(start + 1, current), 8)));
+                return;
+            }
+        }
+
+        while(isDigit(peek()) || '.' == peek() || 'e' == peek() || '+' == peek() || '-' == peek())
+            advance();
+    }
+
+    private void string()
+    {
+        while (peek() != '"' && !isAtEnd())
+        {
+            if (peek() == '\n')
+            {
+                Thlang.error(line, "Unterminated string.");
+                return;
+            }
+
+            advance();
+        }
+
+        // Unterminated string.
+        if (isAtEnd()) {
+            Thlang.error(line, "Unterminated string.");
+            return;
+        }
+
+        // The closing ".
+        advance();
+
+        // Trim the surrounding quotes.
+        String value = source.substring(start + 1, current - 1);
+        addToken(STRING, value);
     }
 
     private void consumeMultilineString()
@@ -123,7 +202,7 @@ public class Lexer
                 advance();
             if(match("$$$"))
             {
-                addToken(STRING, source.substring(start + 3, current - 2));
+                addToken(STRING, source.substring(start + 3, current - 3));
                 return;
             }
         }
@@ -135,6 +214,12 @@ public class Lexer
     {
         if (isAtEnd()) return '\0';
         return source.charAt(current);
+    }
+
+    private char peekNext()
+    {
+        if (current + 1 >= source.length()) return '\0';
+        return source.charAt(current + 1);
     }
 
     private boolean isAtEnd()

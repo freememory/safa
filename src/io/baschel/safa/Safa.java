@@ -1,4 +1,4 @@
-package io.baschel.thlang;
+package io.baschel.safa;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Created by macobas on 06/11/17.
  */
-public class Thlang
+public class Safa
 {
     private static boolean hadError = false;
 
@@ -19,7 +19,7 @@ public class Thlang
     {
         if (args.length > 1) 
         {
-            System.out.println("Usage: thlang [script]");
+            System.out.println("Usage: safa [script]");
         } 
         else if (args.length == 1) 
         {

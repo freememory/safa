@@ -1,11 +1,11 @@
-package io.baschel.thlang;
+package io.baschel.safa;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.baschel.thlang.TokenType.*;
+import static io.baschel.safa.TokenType.*;
 
 /**
  * Created by macobas on 06/11/17.
@@ -124,7 +124,7 @@ public class Lexer
 
 
             default:
-                Thlang.error(line, "Unexpected character.");
+                Safa.error(line, "Unexpected character.");
                 break;
         }
     }
@@ -170,7 +170,7 @@ public class Lexer
         {
             if (peek() == '\n')
             {
-                Thlang.error(line, "Unterminated string.");
+                Safa.error(line, "Unterminated string.");
                 return;
             }
 
@@ -179,7 +179,7 @@ public class Lexer
 
         // Unterminated string.
         if (isAtEnd()) {
-            Thlang.error(line, "Unterminated string.");
+            Safa.error(line, "Unterminated string.");
             return;
         }
 
@@ -207,7 +207,7 @@ public class Lexer
             }
         }
 
-        Thlang.error(beginline, "Unterminated multi-line string.");
+        Safa.error(beginline, "Unterminated multi-line string.");
     }
 
     private char peek()

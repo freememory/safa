@@ -1,4 +1,4 @@
-package io.baschel.thlang;
+package io.baschel.safa;
 
 /**
  * Created by macobas on 06/11/17.

@@ -3,7 +3,9 @@ package io.baschel.safa;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static io.baschel.safa.TokenType.*;
 
@@ -13,15 +15,18 @@ import static io.baschel.safa.TokenType.*;
 public class Lexer
 {
     private final String source;
-    private final List<Token> tokens = new ArrayList<>();
-    private int start = 0;
-    private int current = 0;
-    private int line = 1;
-
+    private final List<Token>            tokens     = new ArrayList<>();
+    private       int                    start      = 0;
+    private       int                    current    = 0;
+    private       int                    line       = 1;
+    private       Map<String, TokenType> keywordMap = new HashMap<>();
 
     Lexer(String source)
     {
         this.source = source;
+        for(TokenType tt : TokenType.values())
+            if(tt.isKeyword())
+                keywordMap.put(tt.getText(), tt);
     }
 
     public List<Token> lex()
@@ -115,18 +120,32 @@ public class Lexer
             case ' ':
             case '\r':
             case '\t':
-                // Ignore whitespace.
                 break;
-
             case '\n':
                 line++;
                 break;
-
-
             default:
-                Safa.error(line, "Unexpected character.");
+                if(isDigit(c))
+                        number();
+                else if(isAlpha(c))
+                    identifier();
+                else
+                    Safa.error(line, "Unexpected character.");
+
                 break;
         }
+    }
+
+    private boolean isAlpha(char c)
+    {
+        return (c >= 'a' && c <= 'z') ||
+                (c >= 'A' && c <= 'Z') ||
+                c == '_';
+    }
+
+    private boolean isAlphaNumeric(char c)
+    {
+        return isAlpha(c) || isDigit(c);
     }
 
     private boolean isDigit(char c)
@@ -134,34 +153,57 @@ public class Lexer
         return c >= '0' && c <= '9';
     }
 
+    private void identifier()
+    {
+        while (isAlphaNumeric(peek())) advance();
+        String text = source.substring(start, current);
+        addToken(keywordMap.getOrDefault(text, IDENTIFIER));
+    }
+
     private void number()
     {
-        if('0' == peek())
+        boolean possiblyOctal = false;
+        try
         {
-            if('x' == peekNext())
+            if (source.charAt(start) == '0')
             {
-                while (isDigit(peek()) || "ABCDEF".indexOf(peek()) != -1)
+                if ('x' == peek())
+                {
                     advance();
+                    while (isDigit(peek()) || "ABCDEFabcdef".indexOf(peek()) != -1)
+                        advance();
 
-                addToken(NUMBER, new BigDecimal(new BigInteger(source.substring(start + 2, current), 16)));
-                return;
-            }
-            else if('b' == peekNext())
-            {
-                while (isDigit(peek()))
+                    addToken(NUMBER, new BigDecimal(new BigInteger(source.substring(start + 2, current), 16)));
+                    return;
+                }
+                else if ('b' == peek())
+                {
+                    advance();
+                    while (isDigit(peek()))
+                        advance();
                     addToken(NUMBER, new BigDecimal(new BigInteger(source.substring(start + 2, current), 2)));
-                return;
+                    return;
+                }
+                else
+                    possiblyOctal = true;
             }
-            else if(isDigit(peekNext()))
-            {
-                while (isDigit(peek()))
-                    addToken(NUMBER, new BigDecimal(new BigInteger(source.substring(start + 1, current), 8)));
-                return;
-            }
-        }
 
-        while(isDigit(peek()) || '.' == peek() || 'e' == peek() || '+' == peek() || '-' == peek())
-            advance();
+            while (isDigit(peek()) || '.' == peek() || 'e' == peek() || '+' == peek() || '-' == peek())
+            {
+                char p = peek();
+                if (!isDigit(p)) possiblyOctal = false;
+                advance();
+            }
+
+            if (possiblyOctal)
+                addToken(NUMBER, new BigDecimal(new BigInteger(source.substring(start, current), 8)));
+            else
+                addToken(NUMBER, new BigDecimal(source.substring(start, current)));
+        }
+        catch(Exception ex)
+        {
+            Safa.error(line, "Bad number.");
+        }
     }
 
     private void string()
@@ -197,14 +239,19 @@ public class Lexer
         while(!isAtEnd())
         {
             if(peek() == '\n')
+            {
                 line++;
-            if(peek() != '$')
                 advance();
-            if(match("$$$"))
+            }
+            else if(peek() != '$')
+                advance();
+            else if(match("$$$"))
             {
                 addToken(STRING, source.substring(start + 3, current - 3));
                 return;
             }
+            else
+                advance();
         }
 
         Safa.error(beginline, "Unterminated multi-line string.");
@@ -229,7 +276,7 @@ public class Lexer
 
     private boolean wouldEnd(int endIdx)
     {
-        return endIdx >= source.length();
+        return endIdx > source.length();
     }
 
     private char advance() {

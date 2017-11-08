@@ -54,29 +54,38 @@ enum TokenType {
     NUMBER(null),
 
     // Keywords.
-    CLASS("class"),
-    ELSE("else"),
-    FALSE("false"),
-    FUNC("func"),
-    FOR("for"),
-    IF("if"),
-    IN("in"),
-    NULL("null"),
-    RETURN("print"),
-    MEMBERS("members"),
-    GET("get"),
-    SET("set"),
-    THIS("this"),
-    TRUE("true"),
-    WHILE("while"),
+    CLASS("class", true),
+    ELSE("else", true),
+    FALSE("false", true),
+    FUNC("func", true),
+    FOR("for", true),
+    IF("if", true),
+    IN("in", true),
+    NULL("null", true),
+    RETURN("return", true),
+    BREAK("break", true),
+    CONTINUE("continue", true),
+    GET("get", true),
+    SET("set", true),
+    TRUE("true", true),
+    WHILE("while", true),
 
     EOF(null);
 
     private String text;
+    private boolean keyword;
     TokenType(String repr)
     {
+        this(repr, false);
+    }
+
+    TokenType(String repr, boolean kw)
+    {
         this.text = repr;
+        this.keyword = kw;
     }
 
     public String getText() { return text; }
+
+    public boolean isKeyword() { return keyword; }
 }

@@ -58,10 +58,6 @@ public class Safa
 
         // For now, just print the tokens.
         tokens.forEach(System.out::println);
-        for (Token token : tokens)
-        {
-            System.out.println(token);
-        }
     }
 
     public static void error(int line, String message)

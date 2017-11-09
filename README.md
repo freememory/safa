@@ -27,11 +27,6 @@ Foo = class(FooBase1, FooBase2, AnotherMixin3)
     _x = 1;
     _y = 2;
 
-    __new__ = func(self, arg1, arg2)
-    {
-        self.x = arg1;
-    }
-
     get x = func()
     {
         return self._x;
@@ -43,24 +38,29 @@ Foo = class(FooBase1, FooBase2, AnotherMixin3)
     }
 }
 
-f = Foo(1,2);
+f = Foo();
 ```
 
 No, really, classes are variables
 ---
 ```
-FooMaker = func()
+FooMaker = func(x, y)
 {
     Foo = class()
     {
+        // same as above...
     }
 
-    return Foo;
+    f = Foo();
+    f.x = x;
+    f.y = y;
+    return f;
 }
 
 c = FooMaker();
-f = c();
 ```
+
+Or, alternatively you can return the actual class. It doesn't matter. But if you have a 'Maker' function that's the same as a constructor. You could probably even be more clever and use variable binding when you call the Maker function so you don't even need to do `f.x=blah;`. Hey, I just though about that now, it's a great idea!
 
 Lists
 ---

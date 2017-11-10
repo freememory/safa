@@ -173,7 +173,7 @@ public class Lexer
                     while (isDigit(peek()) || "ABCDEFabcdef".indexOf(peek()) != -1)
                         advance();
 
-                    addToken(NUMBER, new BigDecimal(new BigInteger(source.substring(start + 2, current), 16)));
+                    addToken(NUMBER, new Double(Integer.valueOf(source.substring(start + 2, current), 16)));
                     return;
                 }
                 else if ('b' == peek())
@@ -181,7 +181,7 @@ public class Lexer
                     advance();
                     while (isDigit(peek()))
                         advance();
-                    addToken(NUMBER, new BigDecimal(new BigInteger(source.substring(start + 2, current), 2)));
+                    addToken(NUMBER, new Double(Integer.valueOf(source.substring(start + 2, current), 2)));
                     return;
                 }
                 else
@@ -196,9 +196,9 @@ public class Lexer
             }
 
             if (possiblyOctal)
-                addToken(NUMBER, new BigDecimal(new BigInteger(source.substring(start, current), 8)));
+                addToken(NUMBER, new Double(Integer.valueOf(source.substring(start, current), 8)));
             else
-                addToken(NUMBER, new BigDecimal(source.substring(start, current)));
+                addToken(NUMBER, new Double(source.substring(start, current)));
         }
         catch(Exception ex)
         {

@@ -15,6 +15,15 @@ public class Parser
     {
         this.tokens = tokens;
     }
+    private static class ParseError extends RuntimeException {}
+
+    public Expr parse() {
+        try {
+            return expression();
+        } catch (ParseError error) {
+            return null;
+        }
+    }
 
     private boolean match(TokenType... types) {
         for (TokenType type : types) {
@@ -66,13 +75,24 @@ public class Parser
         return expr;
     }
 
+    private Expr bitOps() {
+        Expr expr = addition();
+
+        while (match(AMP, PIPE, HAT)) {
+            Token operator = previous();
+            Expr right = addition();
+            expr = new Expr.Binary(expr, operator, right);
+        }
+
+        return expr;
+    }
 
     private Expr comparison() {
-        Expr expr = addition();
+        Expr expr = bitOps();
 
         while (match(GT, GTEQ, LT, LTEQ)) {
             Token operator = previous();
-            Expr right = addition();
+            Expr right = bitOps();
             expr = new Expr.Binary(expr, operator, right);
         }
 
@@ -113,5 +133,52 @@ public class Parser
         return primary();
     }
 
+    private Expr primary() {
+        if (match(FALSE)) return new Expr.Literal(false);
+        if (match(TRUE)) return new Expr.Literal(true);
+        if (match(NULL)) return new Expr.Literal(null);
 
+        if (match(NUMBER, STRING)) {
+            return new Expr.Literal(previous().literal);
+        }
+
+        if (match(LPAREN)) {
+            Expr expr = expression();
+            consume(RPAREN, "Expect ')' after expression.");
+            return new Expr.Grouping(expr);
+        }
+
+        throw error(peek(), "Expect expression");
+    }
+
+    private Token consume(TokenType type, String message) {
+        if (check(type)) return advance();
+
+        throw error(peek(), message);
+    }
+
+    private ParseError error(Token token, String message) {
+        Safa.error(token, message);
+        return new ParseError();
+    }
+
+    private void synchronize() {
+        advance();
+
+        while (!isAtEnd()) {
+            if (previous().type == SEMICOLON) return;
+
+            switch (peek().type) {
+                case CLASS:
+                case FUNC:
+                case FOR:
+                case IF:
+                case WHILE:
+                case RETURN:
+                    return;
+            }
+
+            advance();
+        }
+    }
 }

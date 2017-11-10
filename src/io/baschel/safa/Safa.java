@@ -57,7 +57,7 @@ public class Safa
         List<Token> tokens = lex.lex();
 
         // For now, just print the tokens.
-        tokens.forEach(System.out::println);
+        if (hadError) return;
     }
 
     public static void error(int line, String message)
@@ -72,4 +72,11 @@ public class Safa
         hadError = true;
     }
 
+    static void error(Token token, String message) {
+        if (token.type == TokenType.EOF) {
+            report(token.line, " at end", message);
+        } else {
+            report(token.line, " at '" + token.lexeme + "'", message);
+        }
+    }
 }

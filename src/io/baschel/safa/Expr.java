@@ -13,12 +13,29 @@ abstract class Expr
 	
 	interface Visitor<R>
 	{
-		R visitGroupingExpr(Expr grouping);
-		R visitLiteralExpr(Expr literal);
-		R visitUnaryExpr(Expr unary);
-		R visitBinaryExpr(Expr binary);
+		R visitUnaryExpr(Expr.Unary unary);
+		R visitGroupingExpr(Expr.Grouping grouping);
+		R visitLiteralExpr(Expr.Literal literal);
+		R visitBinaryExpr(Expr.Binary binary);
 	} 
 	
+	static class Unary extends Expr
+	{
+		Unary(Token operator, Expr right)
+		{
+			this.operator = operator;
+			this.right = right;
+		}
+
+		<R> R accept(Visitor<R> visitor)
+		{
+			return visitor.visitUnaryExpr(this);
+		}
+		
+		final Token operator;
+		final Expr right;
+	}
+
 	static class Grouping extends Expr
 	{
 		Grouping(Expr expression)
@@ -47,23 +64,6 @@ abstract class Expr
 		}
 		
 		final Object value;
-	}
-
-	static class Unary extends Expr
-	{
-		Unary(Token operator, Expr right)
-		{
-			this.operator = operator;
-			this.right = right;
-		}
-
-		<R> R accept(Visitor<R> visitor)
-		{
-			return visitor.visitUnaryExpr(this);
-		}
-		
-		final Token operator;
-		final Expr right;
 	}
 
 	static class Binary extends Expr

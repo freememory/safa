@@ -40,6 +40,7 @@ public class Interpreter implements Expr.Visitor<SafaValue> {
             return new SafaImmutableLiteral<>((Boolean)v);
         else if(v instanceof String)
             return new SafaImmutableLiteral<>((String)v);
+        return NUL;
     }
 
     @Override
@@ -58,7 +59,7 @@ public class Interpreter implements Expr.Visitor<SafaValue> {
             case BANG:
                 return makeValue(!isTruthy(right.value()));
             case TILDE:
-                return makeValue(new Double(~(((Double)right.value()).intValue()));
+                return makeValue(new Double(~(((Double)right.value()).intValue())));
         }
 
         return null;

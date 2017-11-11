@@ -12,4 +12,7 @@ public class SafaNull implements SafaValue<Void> {
     public Void value() {
         return null;
     }
+
+    @Override
+    public String _string() { return "null"; }
 }

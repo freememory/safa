@@ -98,5 +98,6 @@ for([k,v] in S)
 
 Numbers
 ---
-Infinite precision, infinite length. This is 2017, wubba lubba dub dub.
-All numbers are doubles, represented by BigDecimal. Probably it's going to be insanely slow...
+~~Infinite precision, infinite length. This is 2017, wubba lubba dub dub.
+All numbers are doubles, represented by BigDecimal. Probably it's going to be insanely slow...~~
+Yeah - that got annoying. Doubles for now, I'll try to turn it back into BigDecimal later.

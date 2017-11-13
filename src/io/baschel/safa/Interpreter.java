@@ -50,6 +50,12 @@ public class Interpreter implements Expr.Visitor<SafaValue> {
     }
 
     @Override
+    public SafaValue visitPostfixExpr(Expr.Postfix postfix)
+    {
+        return null;
+    }
+
+    @Override
     public SafaValue visitUnaryExpr(Expr.Unary unary) {
         SafaValue right = eval(unary.right);
 
@@ -59,14 +65,26 @@ public class Interpreter implements Expr.Visitor<SafaValue> {
             case BANG:
                 return makeValue(!isTruthy(right.value()));
             case TILDE:
-                return makeValue(new Double(~(((Double)right.value()).intValue())));
+                return makeValue((double) ~(((Double) right.value()).intValue()));
         }
-
         return null;
     }
 
     @Override
     public SafaValue visitBinaryExpr(Expr.Binary binary) {
+        SafaValue left = eval(binary.left);
+        SafaValue right = eval(binary.right);
+
+        switch (binary.operator.type) {
+            case MINUS:
+                return makeValue((double)left.value() - (double)right.value());
+            case SLASH:
+                return makeValue((double)left.value() / (double)right.value());
+            case STAR:
+                return makeValue((double)left.value() * (double)right.value());
+        }
+
+        // Unreachable.
         return null;
     }
 }

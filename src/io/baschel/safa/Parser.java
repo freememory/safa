@@ -124,13 +124,25 @@ public class Parser
     }
 
     private Expr unary() {
-        if (match(BANG, MINUS, TILDE)) {
+        if (match(PLUSPLUS, MINUSMINUS, BANG, MINUS, TILDE)) {
             Token operator = previous();
-            Expr right = unary();
+            Expr right = unary(); // so you can do !!x or !++x
             return new Expr.Unary(operator, right);
         }
 
-        return primary();
+        return postfixExpression();
+    }
+
+    private Expr postfixExpression()
+    {
+        Expr expr = primary();
+        if(match(PLUSPLUS, MINUSMINUS))
+        {
+            Token operator = previous();
+            expr = new Expr.Postfix(expr, operator);
+        }
+
+        return expr;
     }
 
     private Expr primary() {

@@ -28,7 +28,7 @@ def define_visitor(base, types):
 	interface Visitor<R>
 	{{
 {funcs}
-	}}'''.format(funcs='\n'.join(['		R visit%s%s(%s %s);' % (t, base, base, t.lower()) for t in types]))
+	}}'''.format(funcs='\n'.join(['		R visit%s%s(%s.%s %s);' % (t, base, base, t, t.lower()) for t in types]))
 	return iface
 
 def define_type(base, derv, fields):
@@ -64,6 +64,7 @@ def main(args):
 		'Unary': [('Token', 'operator'), ('Expr', 'right')],
 		'Grouping':[('Expr', 'expression')],
 		'Literal':[('Object', 'value')],
+		'Postfix': [('Expr', 'left'), ('Token', 'operator')],
 		'Binary': [('Expr', 'left'), ('Token', 'operator'), ('Expr', 'right')]
 	})
 
